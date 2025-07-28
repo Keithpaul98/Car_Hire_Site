@@ -1,5 +1,33 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.core.validators import MinValueValidator, MaxValueValidator
+
+class CarCategory(models.Model):
+    name = models.CharField(max_length=50)  # e.g., SUV, Sedan, Sports
+    description = models.TextField()
+    
+    def __str__(self):
+        return self.name
+    
+    class Meta:
+        verbose_name_plural = "Car Categories"
+
+class CarFeature(models.Model):
+    name = models.CharField(max_length=50)  # e.g., GPS, Bluetooth, Sunroof
+    icon = models.CharField(max_length=50, help_text="Font Awesome icon class", null=True, blank=True)
+    
+    def __str__(self):
+        return self.name
+
+class CarImage(models.Model):
+    car = models.ForeignKey('Car', related_name='images', on_delete=models.CASCADE)
+    image = models.ImageField(upload_to='cars/')
+    is_primary = models.BooleanField(default=False)
+    caption = models.CharField(max_length=200, blank=True)
+    upload_date = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return f"Image for {self.car} - {'Primary' if self.is_primary else 'Secondary'}"
 
 class Car(models.Model):
     TRANSMISSION_CHOICES = [
@@ -14,16 +42,44 @@ class Car(models.Model):
         ('H', 'Hybrid'),
     ]
 
+    category = models.ForeignKey(CarCategory, on_delete=models.PROTECT, null=True, blank=True)
+    features = models.ManyToManyField(CarFeature, blank=True)
     make = models.CharField(max_length=50)
     model = models.CharField(max_length=50)
-    year = models.IntegerField()
+    year = models.IntegerField(
+        validators=[
+            MinValueValidator(1900),
+            MaxValueValidator(2100)
+        ]
+    )
     transmission = models.CharField(max_length=1, choices=TRANSMISSION_CHOICES)
     fuel_type = models.CharField(max_length=1, choices=FUEL_CHOICES)
-    seats = models.IntegerField()
-    daily_rate = models.DecimalField(max_digits=8, decimal_places=2)
+    seats = models.IntegerField(
+        validators=[
+            MinValueValidator(1),
+            MaxValueValidator(15)
+        ]
+    )
+    daily_rate = models.DecimalField(
+        max_digits=8, 
+        decimal_places=2,
+        validators=[MinValueValidator(0)]
+    )
+    weekend_rate = models.DecimalField(
+        max_digits=8,
+        decimal_places=2,
+        validators=[MinValueValidator(0)],
+        null=True,
+        blank=True
+    )
+    mileage = models.IntegerField(help_text="Current mileage of the car", null=True, blank=True)
+    license_plate = models.CharField(max_length=20, unique=True, null=True, blank=True)
     is_available = models.BooleanField(default=True)
-    image = models.ImageField(upload_to='cars/', null=True, blank=True)
     description = models.TextField()
+    specifications = models.JSONField(
+        default=dict,
+        help_text="Additional specifications like engine size, horsepower, etc."
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

@@ -1,5 +1,27 @@
 # Car Hire Project Changelog
 
+## [2025-07-28] Car Management Enhancement
+
+### Added
+#### New Models
+- Created `CarCategory` model for categorizing vehicles (SUV, Sedan, etc.)
+- Created `CarFeature` model for tracking car features (GPS, Bluetooth, etc.)
+- Created `CarImage` model for handling multiple car images
+
+#### Enhanced Car Model
+- Added category relationship
+- Added features relationship (many-to-many)
+- Added validation for year, seats, and rates
+- Added weekend_rate field for special pricing
+- Added mileage and license_plate fields
+- Added specifications JSONField for flexible additional details
+- Improved data validation with MinValueValidator and MaxValueValidator
+
+### Modified
+- Removed single image field from Car model in favor of CarImage relationship
+- Updated model relationships for better data integrity
+- Added help text for better admin interface usability
+
 ## [2025-07-28] Initial Setup and Backend Development
 
 ### Added
