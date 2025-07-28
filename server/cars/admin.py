@@ -1,11 +1,27 @@
 from django.contrib import admin
-from .models import Car, Booking, Review
+from .models import Car, CarCategory, CarFeature, CarImage, Booking, Review
+
+@admin.register(CarCategory)
+class CarCategoryAdmin(admin.ModelAdmin):
+    list_display = ('name',)
+    search_fields = ('name',)
+
+@admin.register(CarFeature)
+class CarFeatureAdmin(admin.ModelAdmin):
+    list_display = ('name', 'icon')
+    search_fields = ('name',)
+
+class CarImageInline(admin.TabularInline):
+    model = CarImage
+    extra = 1
 
 @admin.register(Car)
 class CarAdmin(admin.ModelAdmin):
-    list_display = ('make', 'model', 'year', 'daily_rate', 'is_available')
-    list_filter = ('is_available', 'make', 'transmission', 'fuel_type')
-    search_fields = ('make', 'model')
+    list_display = ('make', 'model', 'year', 'category', 'daily_rate', 'is_available')
+    list_filter = ('is_available', 'category', 'make', 'transmission', 'fuel_type')
+    search_fields = ('make', 'model', 'license_plate')
+    inlines = [CarImageInline]
+    filter_horizontal = ('features',)
 
 @admin.register(Booking)
 class BookingAdmin(admin.ModelAdmin):
