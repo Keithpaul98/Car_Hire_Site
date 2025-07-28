@@ -1,13 +1,45 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from .models import Car, Booking, Review
+from .models import Car, CarCategory, CarFeature, CarImage, Booking, Review
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('id', 'username', 'email', 'first_name', 'last_name')
 
+class CarCategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CarCategory
+        fields = '__all__'
+
+class CarFeatureSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CarFeature
+        fields = '__all__'
+
+class CarImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CarImage
+        fields = ('id', 'image', 'is_primary', 'caption')
+
 class CarSerializer(serializers.ModelSerializer):
+    category = CarCategorySerializer(read_only=True)
+    category_id = serializers.PrimaryKeyRelatedField(
+        queryset=CarCategory.objects.all(),
+        source='category',
+        write_only=True,
+        required=False
+    )
+    features = CarFeatureSerializer(many=True, read_only=True)
+    feature_ids = serializers.PrimaryKeyRelatedField(
+        queryset=CarFeature.objects.all(),
+        source='features',
+        write_only=True,
+        many=True,
+        required=False
+    )
+    images = CarImageSerializer(many=True, read_only=True)
+
     class Meta:
         model = Car
         fields = '__all__'
